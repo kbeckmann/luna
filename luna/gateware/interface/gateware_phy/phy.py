@@ -146,13 +146,35 @@ class GatewarePHY(Elaboratable):
         # General control signals.
         #
 
-        # If we have a pullup signal, drive it based on ``term_select``.
-        if hasattr(self._io, 'pullup'):
-            m.d.comb += self._io.pullup.eq(self.term_select)
+        if hasattr(self._io, 'dp_pull') and hasattr(self._io, 'dn_pull'):
+            # XIL USB-C PMOD
+            #
+            # Has pull-up and pull-down resistors in series with diodes
+            # on both d+ and d-.
+            #
+            # oe=0: pulls have no effect.
+            # oe=1 and o=0: pull down enabled
+            # oe=1 and o=1: pull up enabled
 
-        # If we have a pulldown signal, drive it based on our pulldown controls.
-        if hasattr(self._io, 'pulldown'):
-            m.d.comb += self._io.pullup.eq(self.dm_pulldown | self.dp_pulldown)
+            m.d.comb += self._io.dp_pull.oe.eq(self.term_select)
+            m.d.comb += self._io.dp_pull.o.eq(self.term_select)
+
+            m.d.comb += self._io.dn_pull.oe.eq(0)
+
+            with m.If(self.dp_pulldown):
+                m.d.comb += self._io.dp_pull.oe.eq(1)
+                m.d.comb += self._io.dp_pull.o.eq(0)
+            with m.If(self.dm_pulldown):
+                m.d.comb += self._io.dn_pull.oe.eq(1)
+                m.d.comb += self._io.dn_pull.o.eq(0)
+        else:
+            # If we have a pullup signal, drive it based on ``term_select``.
+            if hasattr(self._io, 'pullup'):
+                m.d.comb += self._io.pullup.eq(self.term_select)
+
+            # If we have a pulldown signal, drive it based on our pulldown controls.
+            if hasattr(self._io, 'pulldown'):
+                m.d.comb += self._io.pullup.eq(self.dm_pulldown | self.dp_pulldown)
 
 
         #
