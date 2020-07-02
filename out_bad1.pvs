@@ -1,0 +1,82 @@
+[General]
+decode_signals=0
+meta_objs=9
+views=1
+
+[0]
+color=4279638298
+conv_options=0
+conversion_type=0
+enabled=true
+name=0
+
+[1]
+color=4287582722
+conv_options=0
+conversion_type=0
+enabled=true
+name=1
+
+[meta_obj0]
+assoc_view=0
+text=I
+time=22 serialization::archive 17 0 0 0 0 1 62213015 75000000 2812612 36523278 5757522 0 0 0 6
+type=time_marker
+
+[meta_obj1]
+assoc_view=0
+text=E
+time=22 serialization::archive 17 0 0 0 0 1 87549581 50000000 66063989 83421968 29617022 0 0 0 6
+type=time_marker
+
+[meta_obj2]
+assoc_view=0
+text=F
+time=22 serialization::archive 17 0 0 0 0 1 87549631 49999999 13908368 39855182 91592597 0 0 0 6
+type=time_marker
+
+[meta_obj3]
+assoc_view=0
+text=G
+time=22 serialization::archive 17 0 0 0 0 1 87549650 25000001 6650190 90083660 55786608 0 0 0 6
+type=time_marker
+
+[meta_obj4]
+assoc_view=0
+text=H
+time=22 serialization::archive 17 0 0 0 0 1 87549700 24999999 54494569 46516875 17762184 0 0 0 6
+type=time_marker
+
+[meta_obj5]
+assoc_view=0
+text=B
+time=22 serialization::archive 17 0 0 0 0 2 5549106 99999999 75692617 22674127 66814231 0 0 0 6
+type=time_marker
+
+[meta_obj6]
+assoc_view=0
+text=C
+time=22 serialization::archive 17 0 0 0 0 2 5549125 74999999 46389834 80399474 50160979 0 0 0 6
+type=time_marker
+
+[meta_obj7]
+assoc_view=0
+text=D
+time=22 serialization::archive 17 0 0 0 0 2 5549175 75000000 16278818 29335819 92983817 0 0 0 6
+type=time_marker
+
+[meta_obj8]
+assoc_view=0
+text=A
+time=22 serialization::archive 17 0 0 0 0 2 82836015 49999999 31391130 30338194 22125815 0 0 0 6
+type=time_marker
+
+[view0]
+0\trace_height=30
+1\trace_height=30
+offset=22 serialization::archive 17 0 0 0 0 7 19490183 36115036 59826311 69109854 72097433 0 1 0 6
+scale=0.0075937499999997465
+segment_display_mode=1
+splitter_state="@ByteArray(\0\0\0\xff\0\0\0\x1\0\0\0\x2\0\0\0;\0\0\t\xbc\x1\0\0\0\x1\x1\0\0\0\x1\0)"
+v_offset=-566
+zero_offset=22 serialization::archive 17 0 0 0 0 0 0 0 0 0 0 0 0 0 6
