@@ -46,8 +46,8 @@ class PergolaDomainGenerator(Elaboratable):
                 i_CLKI=input_clock,
 
                 # Generated clock outputs.
-                o_CLKOP=ClockSignal("sync"), # 48 MHz
-                o_CLKOS=ClockSignal("usb"),  # 12 MHz
+                o_CLKOP=ClockSignal("usb"),  # 48 MHz
+                o_CLKOS=ClockSignal("sync"), # 12 MHz
 
                 # Status.
                 #o_LOCK=self._pll_lock,
