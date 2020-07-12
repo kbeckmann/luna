@@ -22,6 +22,10 @@
 /** Store the current LED blink pattern. */
 static blink_pattern_t blink_pattern = BLINK_IDLE;
 
+#define UART_LED_TMO 250
+
+static uint32_t uart_rx_tmr;
+static uint32_t uart_tx_tmr;
 
 /**
  * Sets the active LED blink pattern.
@@ -91,7 +95,19 @@ void leds_off(void)
 	led_off(LED_B);
 }
 
+void led_uart_tx(void)
+{
+	uart_tx_tmr = board_millis();
+	leds_off();
+	led_on(LED_R);
+}
 
+void led_uart_rx(void)
+{
+	uart_rx_tmr = board_millis();
+	leds_off();
+	led_on(LED_G);
+}
 
 /**
  * Task that handles blinking the heartbeat LED.
@@ -99,34 +115,34 @@ void leds_off(void)
 void heartbeat_task(void)
 {
 	static uint32_t start_ms = 0;
+	static uint32_t blink = 0;
 
-	// Blink every interval ms
-	if ( board_millis() - start_ms < blink_pattern) {
-		return; // not enough time
+	if ((board_millis() - uart_tx_tmr < UART_LED_TMO) ||
+	    (board_millis() - uart_rx_tmr < UART_LED_TMO) ||
+	    (board_millis() - start_ms < blink_pattern)) {
+		return;
 	}
 
 	start_ms += blink_pattern;
+	blink = ~blink;
+
+	leds_off();
 
 	switch (blink_pattern) {
 	case BLINK_IDLE:
-		led_toggle(LED_R);
-		led_off(LED_G);
-		led_toggle(LED_B);
+		led_set(LED_G, blink);
 		break;
 	case BLINK_JTAG_CONNECTED:
-		led_off(LED_R);
-		led_toggle(LED_G);
-		led_off(LED_B);
+		led_set(LED_G, blink);
+		led_set(LED_B, blink);
 		break;
 	case BLINK_JTAG_UPLOADING:
-		led_off(LED_R);
-		led_toggle(LED_G);
-		led_on(LED_B);
+		led_set(LED_G, blink);
+		led_set(LED_B, blink);
 		break;
+	case BLINK_FLASH_CONNECTED:
 	default:
-		led_toggle(LED_R);
-		led_off(LED_G);
-		led_off(LED_B);
+		led_set(LED_R, blink);
 		break;
 	}
 
