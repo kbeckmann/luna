@@ -46,7 +46,8 @@ class ApolloDebugger:
     # Their minor revision then encodes the board type.
     EXTERNAL_BOARD_MAJOR = 0xFF
     EXTERNAL_BOARD_NAMES = {
-        0: "Daisho [rev 31-Oct-2014]"
+        0: "Daisho [rev 31-Oct-2014]",
+        1: "Pergola [RevA 0.1]",
     }
 
 

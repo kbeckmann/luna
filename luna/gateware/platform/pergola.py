@@ -373,63 +373,62 @@ class PergolaPlatform(LatticeECP5Platform, LUNAPlatform):
         Connector("pmod", 4, "F16 G16 J16 L16      G15 H15 J15 L15"), # PMOD5
     ]
 
-    @property
-    def file_templates(self):
-        idcodes = {
-            "LFE5U-12F": "0x21111043",
-            "LFE5U-25F": "0x41111043",
-            "LFE5U-45F": "0x41112043",
-            "LFE5U-85F": "0x41113043",
+    def toolchain_prepare(self, fragment, name, **kwargs):
+        overrides = {
+            'ecppack_opts': '--compress --idcode {} --freq 38.8'.format(0x21111043)
         }
-        return {
-            **super().file_templates,
-            "{{name}}-openocd.cfg": """
-            jtag newtap ecp5 tap -irlen 8 -expected-id {} ;
-            """.format(idcodes[self.device])
-        }
+
+        return super().toolchain_prepare(fragment, name, **overrides, **kwargs)
+
 
     def toolchain_program(self, products, name):
-        openocd = os.environ.get("OPENOCD", "openocd")
-        interface = os.environ.get("INTERFACE", "/dev/ttyACM0")
-        if interface == "SiPEED" or interface == "busblaster":
-            if interface == "SiPEED":
-                args = ["-c", """
-                        interface ftdi
-                        ftdi_vid_pid 0x0403 0x6010
-                        ftdi_layout_init 0x0018 0x05fb
-                        ftdi_layout_signal nSRST -data 0x0010
-                    """]
-            elif interface == "busblaster":
-                args = ["-f", "interface/ftdi/dp_busblaster.cfg"]
+        """ Programs the board via its sideband connection. """
 
-            with products.extract("{}-openocd.cfg".format(name), "{}.svf".format(name)) \
-                    as (config_filename, vector_filename):
-                subprocess.check_call([openocd,
-                    *args,
-                    "-f", config_filename,
-                    "-c", "transport select jtag; adapter_khz 10000; init; svf -quiet {}; exit".format(vector_filename)
-                ])
-        elif interface == "pergola_bringup":
-            # Early bringup code
-            with products.extract("{}.bit".format(name)) as (bitstream):
-                print(subprocess.check_call(["bash", "-c", """
-                stty -F {} 300 raw -clocal -echo icrnl;
-                sleep 0.01;
-                cat {} & > /dev/null;
-                CATPID=$! ;
-                echo -n "$(stat -c%s {})\n" > {};
-                cp {} {};
-                sync;
-                sleep 1;
-                """.format(interface, interface, bitstream, interface, bitstream, interface)]))
-                #   kill $CATPID || true;
-        else:
-            with products.extract("{}.bit".format(name)) as (bitstream):
-                print(subprocess.check_call([
-                    "hf2", "-v", "0x239a", "-p", "0x0058", "flash",
-                    "--file", bitstream, "--address", "0x70000000", "-s"
-                ]))
+        from luna.apollo import ApolloDebugger
+        from luna.apollo.ecp5 import ECP5_JTAGProgrammer
 
+        # Create our connection to the debug module.
+        debugger = ApolloDebugger()
+
+        # Grab our generated bitstream, and upload it to the FPGA.
+        bitstream =  products.get("{}.bit".format(name))
+        with debugger.jtag as jtag:
+            programmer = ECP5_JTAGProgrammer(jtag)
+            programmer.configure(bitstream)
+
+
+    def toolchain_flash(self, products, name="top"):
+        """ Programs the board's flash via its sideband connection. """
+
+        from luna.apollo import ApolloDebugger
+        from luna.apollo.flash import ensure_flash_gateware_loaded
+
+        # Create our connection to the debug module.
+        debugger = ApolloDebugger()
+        ensure_flash_gateware_loaded(debugger, platform=self.__class__())
+
+        # Grab our generated bitstream, and upload it to the .
+        bitstream =  products.get("{}.bit".format(name))
+        with debugger.flash as flash:
+            flash.program(bitstream)
+
+        debugger.soft_reset()
+
+
+    def toolchain_erase(self):
+        """ Erases the board's flash. """
+
+        from luna.apollo import ApolloDebugger
+        from luna.apollo.flash import ensure_flash_gateware_loaded
+
+        # Create our connection to the debug module.
+        debugger = ApolloDebugger()
+        ensure_flash_gateware_loaded(debugger, platform=self.__class__())
+
+        with debugger.flash as flash:
+            flash.erase()
+
+        debugger.soft_reset()
 
     def build(self, *args, **kwargs):
         LatticeECP5Platform.build(self, *args, **kwargs)
